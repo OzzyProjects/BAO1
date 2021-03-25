@@ -150,3 +150,10 @@ sub nettoyage {
 	$texte=~s/\.+$/\./g;
 	return $texte;
 }
+
+sub format_date{
+	
+	my $file = shift;
+	$file =~ m/(\d+)\/(\d+)\/(\d+)\//;
+	return $1.$2.$3;
+}

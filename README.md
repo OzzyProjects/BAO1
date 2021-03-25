@@ -23,3 +23,5 @@ Fonctionnement :
 
 Exemple : 
 perl bao_regexp.pl 2020 3208
+
+Le resultat XML de sortie est visible dans le fichier une.xml

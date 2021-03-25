@@ -1,7 +1,7 @@
 # BAO1
 Boite à outils 1
 
-Cette BAO1 extrait les titre et description du fil RSS du monde pour l'année complete 2020.
+Cette BAO1 extrait les titres et descriptions de tous les items du fil RSS du monde pour l'année complete 2020.
 2 sorties : format txt et xml
 
 Voici 4 versions de la BAO1 utilisant 4 méthodes differentes:

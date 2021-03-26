@@ -115,6 +115,7 @@ sub parsefiles{
         }
     }
     
+    my $compteur = 1;
     foreach my $key(sort { $titres_descriptions->{$a} <=> $titres_descriptions->{$b} or $a cmp $b } keys %$titres_descriptions){
         
         # on recupere le titre et la description avec split avec comme séparateur ||
@@ -129,6 +130,8 @@ sub parsefiles{
         # on ecrit les données dans le fichier txt
         print $output_txt "$t_d[0]\n";
         print $output_txt "$t_d[1]\n";
+	
+	$compteur++;
     }
         
     # fin du fichier xml

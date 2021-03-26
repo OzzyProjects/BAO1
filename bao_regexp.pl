@@ -7,7 +7,8 @@ use Timer::Simple;
 # sudo cpan
 # install Timer::Simple
 
-binmode(STDOUT, ":utf8");
+# on ne travaille qu'en utf-8
+use open qw/ :std :encoding(UTF-8)/;
 
 # on instancie un timer commencant à 0.0s par défaut
 my $t = Timer::Simple->new();

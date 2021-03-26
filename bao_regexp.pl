@@ -106,7 +106,7 @@ sub parsefiles{
         close $input;
     }
     
-    my $compteur = 0;
+    my $compteur = 1;
     
     foreach my $key(sort { $titres_descriptions->{$a} <=> $titres_descriptions->{$b} or $a cmp $b } keys %$titres_descriptions){
         

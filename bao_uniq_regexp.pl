@@ -4,6 +4,9 @@ use strict;
 use List::MoreUtils qw(uniq);
 use Timer::Simple;
 
+# on ne travaille qu'en utf-8
+use open qw/ :std :encoding(UTF-8)/;
+
 # on instancie un timer commencant à 0.0s par défaut
 my $t = Timer::Simple->new();
 # on lance le timer
@@ -91,9 +94,12 @@ sub parsefiles{
             # l'option s dans la recherche permet de tenir compte des \n
             my $titre=&nettoyage($1);
             my $description=&nettoyage($2);
+            my $xml_file = $file;
+            my $date = format_date($file);
             
+            # on ajoute le titre et la description dans le hash en tant que clé et ayant la valeur 1 par défaut
+            my $title_desc = $titre."||".$description."||".$xml_file."||".$date;
             # on ajoute le titre et la description dans l'array @$titre_description
-            my $title_desc = $titre."||".$description;
             push @$titres_descriptions, $title_desc;
         }
         
@@ -102,20 +108,26 @@ sub parsefiles{
     
     # on supprime tous les doublons grace à uniq() qui renvoie un array de valeurs uniques
     my @unique = uniq @$titres_descriptions;
+
+    # on crée un nouveau dictionnaire avec en valeur la date de publication
+    my %hash_items = map {$_ =~ /^.+\|\|(.+)$/; $_ => $1;} @unique;
     
-    # pour chaque titre + description unique
-    foreach my $value(@unique){
+    my $compteur = 1;
+
+    foreach my $key(sort { $hash_items{$a} <=> $hash_items{$b} or $a cmp $b } keys %hash_items){
         
         # on recupere le titre et la description avec split avec comme séparateur ||
         # $t_d[0] = titre
         # $t_d[1] = description
-        my @t_d = split(/\|\|/, $value);
+        my @t_d = split(/\|\|/, $key);
         
-        # on écrit les données
-        print $output_xml "<item>\n<titre>$t_d[0]</titre>\n";
+        # on écrit les données dans le fichier xml avec numero, date, et fichier pour l'item en question son titre et sa description
+        print $output_xml "<item numero=\"$compteur\" date=\"$hash_items{$key}\" fichier=\"$t_d[2]\"><titre>$t_d[0]</titre>\n";
         print $output_xml "<description>$t_d[1]</description>\n</item>\n";
         print $output_txt "$t_d[0]\n";
         print $output_txt "$t_d[1]\n";
+
+        $compteur++;
     }
         
     # fin du fichier xml
@@ -141,4 +153,11 @@ sub nettoyage {
 	$texte=~s/$/\./g;
 	$texte=~s/\.+$/\./g;
 	return $texte;
+}
+
+sub format_date{
+    
+    my $file = shift;
+    $file =~ m/(\d+)\/(\d+)\/(\d+)\//;
+    return $1.$2.$3;
 }

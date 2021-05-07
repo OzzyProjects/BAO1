@@ -97,10 +97,12 @@ sub parsefiles{
             # l'option s dans la recherche permet de tenir compte des \n
             my $titre=&nettoyage($1);
             my $description=&nettoyage($2);
+            my $xml_file = $file;
             my $date = format_date($file);
             
             # on ajoute le titre et la description dans le hash en tant que clé et ayant la valeur 1 par défaut
-            my $title_desc = $titre."||".$description;
+            my $title_desc = $titre."||".$description."||".$xml_file;
+            # on vérifie grace au test unless qu'il n'existe pas de doublons
             $titres_descriptions->{$title_desc} = $date unless exists($titres_descriptions->{$title_desc});
         }
         
@@ -114,10 +116,11 @@ sub parsefiles{
         # on recupere le titre et la description avec split avec comme séparateur ||
         # $t_d[0] = titre
         # $t_d[1] = description
+        # $t_d[2] = fichier xml
         my @t_d = split(/\|\|/, $key);
         
-        # on écrit les données dans le fichier xml
-        print $output_xml "<item numero=\"$compteur\" date=\"$titres_descriptions->{$key}\"><titre>$t_d[0]</titre>\n";
+        # on écrit les données dans le fichier xml avec numero, date, et fichier pour l'item en question son titre et sa description
+        print $output_xml "<item numero=\"$compteur\" date=\"$titres_descriptions->{$key}\" fichier=\"$t_d[2]\"><titre>$t_d[0]</titre>\n";
         print $output_xml "<description>$t_d[1]</description>\n</item>\n";
         
         # on ecrit les données dans le fichier txt
@@ -139,22 +142,22 @@ sub parsefiles{
 }
 
 sub nettoyage {
-	# quand on lance une procédure
-	# perl range les arguments de la procédure dans une liste spéciale
-	# qui s'appelle @_
-	my $texte=shift @_;
-	$texte=~s/<!\[CDATA\[//g;
-	$texte=~s/\]\]>//g;
+    # quand on lance une procédure
+    # perl range les arguments de la procédure dans une liste spéciale
+    # qui s'appelle @_
+    my $texte=shift @_;
+    $texte=~s/<!\[CDATA\[//g;
+    $texte=~s/\]\]>//g;
     $texte =~s/&nbsp/ /g;
-	# ajout du point en fin de chaîne
-	$texte=~s/$/\./g;
-	$texte=~s/\.+$/\./g;
-	return $texte;
+    # ajout du point en fin de chaîne
+    $texte=~s/$/\./g;
+    $texte=~s/\.+$/\./g;
+    return $texte;
 }
 
 sub format_date{
-	
-	my $file = shift;
-	$file =~ m/(\d+)\/(\d+)\/(\d+)\//;
-	return $1.$2.$3;
+    
+    my $file = shift;
+    $file =~ m/(\d+)\/(\d+)\/(\d+)\//;
+    return $1.$2.$3;
 }

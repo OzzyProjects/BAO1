@@ -103,20 +103,20 @@ sub parsefiles{
             # on recupere les titres et description de l'item
             my $description=$item->{'description'};
             my $titre=$item->{'title'};
+            my $xml_file = $file;
             my $date = format_date($file);
-        
             # on nettoie le texte
             $titre = &nettoietexte($titre);
             $description = &nettoietexte($description);
-            
+
             # on ajoute le titre et la description dans le hash en tant que clé et ayant la valeur 1 par défaut
-            # pour éviter les doublons
-            my $title_desc = $titre."||".$description;
+            my $title_desc = $titre."||".$description."||".$xml_file;
             $titres_descriptions->{$title_desc} = $date unless exists($titres_descriptions->{$title_desc});
         }
     }
     
     my $compteur = 1;
+
     foreach my $key(sort { $titres_descriptions->{$a} <=> $titres_descriptions->{$b} or $a cmp $b } keys %$titres_descriptions){
         
         # on recupere le titre et la description avec split avec comme séparateur ||
@@ -124,15 +124,15 @@ sub parsefiles{
         # $t_d[1] = description
         my @t_d = split(/\|\|/, $key);
         
-        # on écrit les données dans le fichier xml
-        print $output_xml "<item numero=\"$compteur\" date=\"$titres_descriptions->{$key}\"><titre>$t_d[0]</titre>\n";
+        # on écrit les données dans le fichier xml avec numero, date, et fichier pour l'item en question son titre et sa description
+        print $output_xml "<item numero=\"$compteur\" date=\"$titres_descriptions->{$key}\" fichier=\"$t_d[2]\"><titre>$t_d[0]</titre>\n";
         print $output_xml "<description>$t_d[1]</description>\n</item>\n";
 
         # on ecrit les données dans le fichier txt
         print $output_txt "$t_d[0]\n";
         print $output_txt "$t_d[1]\n";
-	
-	$compteur++;
+
+        $compteur++;
     }
         
     # fin du fichier xml
@@ -171,5 +171,3 @@ sub format_date{
 	$file =~ m/(\d+)\/(\d+)\/(\d+)\//;
 	return $1.$2.$3;
 }
-
-

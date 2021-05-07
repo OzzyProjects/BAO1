@@ -2,9 +2,13 @@
 use strict;
 #use warnings;
 use XML::RSS;
+# pour supprimer les doublons
+use List::MoreUtils qw(uniq);
+# pour le timer
 use Timer::Simple;
 
-binmode(STDOUT, ":utf8");
+# on ne travaille qu'en utf-8
+use open qw/ :std :encoding(UTF-8)/;
 
 # on instancie un timer commencant à 0.0s par défaut
 my $t = Timer::Simple->new();
@@ -102,33 +106,40 @@ sub parsefiles{
             # on recupere les titres et description de l'item
             my $description=$item->{'description'};
             my $titre=$item->{'title'};
-        
             # on nettoie le texte
             $titre = &nettoietexte($titre);
             $description = &nettoietexte($description);
+            my $xml_file = $file;
+            my $date = format_date($file);
             
             # on ajoute le titre et la description dans l'array @$titre_description
-            my $title_desc = $titre."||".$description;
+            my $title_desc = $titre."||".$description."||".$xml_file."||".$date;
             push @$titres_descriptions, $title_desc;
         }
     }
     
     # on supprime tous les doublons grace à uniq() qui renvoie un array de valeurs uniques
     my @unique = uniq @$titres_descriptions;
+
+    # on crée un nouveau dictionnaire avec en valeur la date de publication
+    my %hash_items = map {$_ =~ /^.+\|\|(.+)$/; $_ => $1;} @unique;
     
-    # pour chaque titre + description unique
-    foreach my $value(@unique){
+    my $compteur = 1;
+
+    foreach my $key(sort { $hash_items{$a} <=> $hash_items{$b} or $a cmp $b } keys %hash_items){
         
         # on recupere le titre et la description avec split avec comme séparateur ||
         # $t_d[0] = titre
         # $t_d[1] = description
-        my @t_d = split(/\|\|/, $value);
+        my @t_d = split(/\|\|/, $key);
         
-        # on écrit les données
-        print $output_xml "<item>\n<titre>$t_d[0]</titre>\n";
+        # on écrit les données dans le fichier xml avec numero, date, et fichier pour l'item en question son titre et sa description
+        print $output_xml "<item numero=\"$compteur\" date=\"$hash_items{$key}\" fichier=\"$t_d[2]\"><titre>$t_d[0]</titre>\n";
         print $output_xml "<description>$t_d[1]</description>\n</item>\n";
         print $output_txt "$t_d[0]\n";
         print $output_txt "$t_d[1]\n";
+
+        $compteur++;
     }
         
     # fin du fichier xml
@@ -161,4 +172,10 @@ sub nettoietexte{
     return $texte;
 }
 
+sub format_date{
+    
+    my $file = shift;
+    $file =~ m/(\d+)\/(\d+)\/(\d+)\//;
+    return $1.$2.$3;
+}
 
